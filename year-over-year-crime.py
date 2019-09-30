@@ -56,6 +56,9 @@ def write_crime_jpeg(year):
 	y = crime_year_df["Latitude"]
 
 	plt.scatter(x, y, alpha=.005)
+	plt.xlabel("Longitude")
+	plt.ylabel("Latitude")
+	plt.title(f"Fulton Country Crime Heatmap {year}")
 	plt.savefig(f"./year-over-year-scatter-plots/crime_{year}")
 	plt.close()
 
