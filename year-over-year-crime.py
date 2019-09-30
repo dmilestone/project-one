@@ -15,23 +15,54 @@ crime_df = pd.read_csv(crime_file)
 
 crime_df["Year"] = [str(parser.parse(date).year) for date in crime_df["Occur Date"]]
 
-crime_2014_df = crime_df.loc[crime_df["Year"] == "2014"]
-# crime_2015_df = crime_df.loc[crime_df["Year"] == "2015"]
-# crime_2016_df = crime_df.loc[crime_df["Year"] == "2016"]
-# crime_2017_df = crime_df.loc[crime_df["Year"] == "2017"]
-# crime_2018_df = crime_df.loc[crime_df["Year"] == "2018"]
-
-x = crime_2014_df["Longitude"]
-y = crime_2014_df["Latitude"]
-
-plt.scatter(x, y, alpha=.005)
-
 npu_outlines = []
 for npu in data:
 	npu_outlines.append(npu["geometry"]["coordinates"][0])
+npu_outlines.pop()
 
-for value in npu_outlines:
-	x = [outline[0] for outline in value]
-	y = [outline[1] for outline in value]
-	plt.plot(x, y)
-plt.show()
+def write_crime_jpeg(year):
+	xmin = 500
+	ymin = 500
+	xmax = -500
+	ymax = -500
+
+	for value in npu_outlines:
+		if (len(value) == 1):
+			break
+		xs = [outline[0] for outline in value]
+		current_xmin = min(xs)
+		current_xmax = max(xs)
+		if (current_xmin < xmin):
+			xmin = current_xmin
+		if (current_xmin > xmax):
+			xmax = current_xmax
+
+		ys = [outline[1] for outline in value]
+		current_ymin = min(ys)
+		current_ymax = max(ys)
+		if (current_ymin < ymin):
+			ymin = current_ymin
+		if (current_ymax > ymax):
+			ymax = current_ymax
+		plt.plot(xs, ys)
+
+	crime_year_df = crime_df.loc[crime_df["Year"] == year]
+	crime_year_df = crime_year_df[crime_year_df["Longitude"] < xmax]
+	crime_year_df = crime_year_df[crime_year_df["Longitude"] > xmin]
+	crime_year_df = crime_year_df[crime_year_df["Latitude"] < ymax]
+	crime_year_df = crime_year_df[crime_year_df["Latitude"] > ymin]
+
+	x = crime_year_df["Longitude"]
+	y = crime_year_df["Latitude"]
+
+	plt.scatter(x, y, alpha=.005)
+	plt.savefig(f"./year-over-year-scatter-plots/crime_{year}")
+	plt.close()
+
+write_crime_jpeg("2014")
+write_crime_jpeg("2015")
+write_crime_jpeg("2016")
+write_crime_jpeg("2017")
+write_crime_jpeg("2018")
+
+
